@@ -1,3 +1,9 @@
+i3-wm (4.19.3-1regolith) bionic; urgency=medium
+
+  * Package for testing in Regolith 
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Mon, 02 Aug 2021 17:10:46 -0700
+
 i3-wm (4.19.2-1) unstable; urgency=medium
 
   * New upstream release.
