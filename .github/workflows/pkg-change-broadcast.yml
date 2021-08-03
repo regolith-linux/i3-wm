@@ -1,0 +1,19 @@
+name: pkg-change-broadcast
+
+on:
+  push:
+    branches: [ next ]
+  pull_request:
+    branches: [ next ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Broadcast Event
+        run: |
+          SOURCE_REPO_NAME=i3
+          TARGET_REPO_NAME=repo-ubuntu-focal
+          curl -XPOST -u "${{ secrets.ORG_BROADCAST_USER}}:${{secrets.ORG_BROADCAST_TOKEN}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/regolith-linux/$TARGET_REPO_NAME/dispatches --data '{ "event_type": "package_update", "source_repo": "$SOURCE_REPO_NAME"}'
