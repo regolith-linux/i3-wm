@@ -803,12 +803,12 @@ static void handle_client_message(xcb_client_message_event_t *event) {
         if (event->data.data32[0] == XCB_ICCCM_WM_STATE_ICONIC) {
             /* For compatiblity reasons, Wine will request iconic state and cannot ensure that the WM has agreed on it;
              * immediately revert to normal to avoid being stuck in a paused state. */
-            DLOG("Client has requested iconic state, rejecting. (window = %d)\n", event->window);
+            DLOG("Client has requested iconic state, rejecting. (window = %08x)\n", event->window);
             long data[] = {XCB_ICCCM_WM_STATE_NORMAL, XCB_NONE};
             xcb_change_property(conn, XCB_PROP_MODE_REPLACE, event->window,
                                 A_WM_STATE, A_WM_STATE, 32, 2, data);
         } else {
-            DLOG("Not handling WM_CHANGE_STATE request. (window = %d, state = %d)\n", event->window, event->data.data32[0]);
+            DLOG("Not handling WM_CHANGE_STATE request. (window = %08x, state = %d)\n", event->window, event->data.data32[0]);
         }
     } else if (event->type == A__NET_CURRENT_DESKTOP) {
         /* This request is used by pagers and bars to change the current
@@ -876,7 +876,7 @@ static void handle_client_message(xcb_client_message_event_t *event) {
             tree_close_internal(con, KILL_WINDOW, false);
             tree_render();
         } else {
-            DLOG("Couldn't find con for _NET_CLOSE_WINDOW request. (window = %d)\n", event->window);
+            DLOG("Couldn't find con for _NET_CLOSE_WINDOW request. (window = %08x)\n", event->window);
         }
     } else if (event->type == A__NET_WM_MOVERESIZE) {
         /*
@@ -885,7 +885,7 @@ static void handle_client_message(xcb_client_message_event_t *event) {
          */
         Con *con = con_by_window_id(event->window);
         if (!con || !con_is_floating(con)) {
-            DLOG("Couldn't find con for _NET_WM_MOVERESIZE request, or con not floating (window = %d)\n", event->window);
+            DLOG("Couldn't find con for _NET_WM_MOVERESIZE request, or con not floating (window = %08x)\n", event->window);
             return;
         }
         DLOG("Handling _NET_WM_MOVERESIZE request (con = %p)\n", con);
@@ -1059,6 +1059,76 @@ static void handle_focus_in(xcb_focus_in_event_t *event) {
 }
 
 /*
+ * Log FocusOut events.
+ *
+ */
+static void handle_focus_out(xcb_focus_in_event_t *event) {
+    Con *con = con_by_window_id(event->event);
+    const char *window_name, *mode, *detail;
+
+    if (con != NULL) {
+        window_name = con->name;
+        if (window_name == NULL) {
+            window_name = "<unnamed con>";
+        }
+    } else if (event->event == root) {
+        window_name = "<the root window>";
+    } else {
+        window_name = "<unknown window>";
+    }
+
+    switch (event->mode) {
+        case XCB_NOTIFY_MODE_NORMAL:
+            mode = "Normal";
+            break;
+        case XCB_NOTIFY_MODE_GRAB:
+            mode = "Grab";
+            break;
+        case XCB_NOTIFY_MODE_UNGRAB:
+            mode = "Ungrab";
+            break;
+        case XCB_NOTIFY_MODE_WHILE_GRABBED:
+            mode = "WhileGrabbed";
+            break;
+        default:
+            mode = "<unknown>";
+            break;
+    }
+
+    switch (event->detail) {
+        case XCB_NOTIFY_DETAIL_ANCESTOR:
+            detail = "Ancestor";
+            break;
+        case XCB_NOTIFY_DETAIL_VIRTUAL:
+            detail = "Virtual";
+            break;
+        case XCB_NOTIFY_DETAIL_INFERIOR:
+            detail = "Inferior";
+            break;
+        case XCB_NOTIFY_DETAIL_NONLINEAR:
+            detail = "Nonlinear";
+            break;
+        case XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL:
+            detail = "NonlinearVirtual";
+            break;
+        case XCB_NOTIFY_DETAIL_POINTER:
+            detail = "Pointer";
+            break;
+        case XCB_NOTIFY_DETAIL_POINTER_ROOT:
+            detail = "PointerRoot";
+            break;
+        case XCB_NOTIFY_DETAIL_NONE:
+            detail = "NONE";
+            break;
+        default:
+            detail = "unknown";
+            break;
+    }
+
+    DLOG("focus change out: window 0x%08x (con %p, %s) lost focus with detail=%s, mode=%s\n", event->event, con, window_name, detail, mode);
+}
+
+/*
  * Handles ConfigureNotify events for the root window, which are generated when
  * the monitor configuration changed.
  *
@@ -1074,6 +1144,23 @@ static void handle_configure_notify(xcb_configure_notify_event_t *event) {
         return;
     }
     randr_query_outputs();
+
+    ipc_send_event("output", I3_IPC_EVENT_OUTPUT, "{\"change\":\"unspecified\"}");
+}
+
+/*
+ * Handles SelectionClear events for the root window, which are generated when
+ * we lose ownership of a selection.
+ */
+static void handle_selection_clear(xcb_selection_clear_event_t *event) {
+    if (event->selection != wm_sn) {
+        DLOG("SelectionClear for unknown selection %d, ignoring\n", event->selection);
+        return;
+    }
+    LOG("Lost WM_Sn selection, exiting.\n");
+    exit(EXIT_SUCCESS);
+
+    /* unreachable */
 }
 
 /*
@@ -1417,6 +1504,10 @@ void handle_event(int type, xcb_generic_event_t *event) {
             handle_focus_in((xcb_focus_in_event_t *)event);
             break;
 
+        case XCB_FOCUS_OUT:
+            handle_focus_out((xcb_focus_out_event_t *)event);
+            break;
+
         case XCB_PROPERTY_NOTIFY: {
             xcb_property_notify_event_t *e = (xcb_property_notify_event_t *)event;
             last_timestamp = e->time;
@@ -1426,6 +1517,10 @@ void handle_event(int type, xcb_generic_event_t *event) {
 
         case XCB_CONFIGURE_NOTIFY:
             handle_configure_notify((xcb_configure_notify_event_t *)event);
+            break;
+
+        case XCB_SELECTION_CLEAR:
+            handle_selection_clear((xcb_selection_clear_event_t *)event);
             break;
 
         default:
