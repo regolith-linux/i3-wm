@@ -1,3 +1,9 @@
+i3-wm (4.20-1ubuntu1) bionic; urgency=medium
+
+  * Package 4.20 
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Tue, 19 Oct 2021 07:53:04 -0700
+
 i3-wm (4.20-1) unstable; urgency=medium
 
   * New upstream release.
