@@ -1,10 +1,16 @@
+i3-wm (4.20-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Michael Stapelberg <stapelberg@debian.org>  Tue, 19 Oct 2021 08:45:18 +0200
+
 i3-wm (4.19.3-1regolith) bionic; urgency=medium
 
   * Package for testing in Regolith 2
 
  -- Regolith Linux <regolith.linux@gmail.com>  Mon, 02 Aug 2021 17:10:46 -0700
-
-i3-wm (4.19.2-1) unstable; urgency=medium
+ 
+ i3-wm (4.19.2-1) unstable; urgency=medium
 
   * New upstream release.
 
