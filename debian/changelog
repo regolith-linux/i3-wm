@@ -1,3 +1,27 @@
+i3-wm (4.20.1) bionic; urgency=medium
+
+  [ Michael Stapelberg ]
+  * Update debian/changelog
+
+  [ rvalieris ]
+  * check for both arguments NULL on strings_differ
+
+  [ Jakob Haufe ]
+  * Extend title length for xmlto
+
+  [ lycurgus ]
+  * Correct short form of raw option in i3-msg manpage
+
+  [ Baptiste Daroussin ]
+  * portability: add missing headers
+  * portability: use getcwd() instead of get_current_dir_name() (#4645)
+
+  [ Michael Stapelberg ]
+  * post-release release.sh changes
+  * release i3 4.20.1
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Thu, 30 Jun 2022 19:50:39 -0700
+
 i3-wm (4.20-1ubuntu1) bionic; urgency=medium
 
   * Package 4.20 
