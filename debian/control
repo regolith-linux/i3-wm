@@ -60,3 +60,8 @@ Depends: i3-wm (=${binary:Version}), ${misc:Depends}
 Description: Debugging symbols for the i3 window manager
  Debugging symbols for the i3 window manager. Please install this to produce
  useful backtraces before creating new tickets.
+
+Package: i3-session
+Architecture: any
+Depends: i3-wm (=${binary:Version}), ${misc:Depends}
+Description: Xsession for i3
