@@ -1,3 +1,10 @@
+i3-wm (4.21) focal; urgency=medium
+
+  * Package changes
+  * Extract desktop session files into discrete bin package
+
+ -- Regolith Linux <regolith.linux@gmail.com>  Sun, 23 Oct 2022 08:03:40 -0700
+
 i3-wm (4.20.1) bionic; urgency=medium
 
   [ Michael Stapelberg ]
@@ -20,7 +27,7 @@ i3-wm (4.20.1) bionic; urgency=medium
   * post-release release.sh changes
   * release i3 4.20.1
 
- -- Regolith Linux <regolith.linux@gmail.com>  Thu, 30 Jun 2022 19:50:39 -0700
+ -- Regolith Linux <regolith.linux@gmail.com>  Sun, 23 Oct 2022 07:49:42 -0700
 
 i3-wm (4.20-1ubuntu1) bionic; urgency=medium
 
